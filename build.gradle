@@ -51,6 +51,12 @@ repositories {
 dependencies {
     // Use JUnit test framework.
     testImplementation 'junit:junit:4.13'
+// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+	testImplementation 'org.junit.platform:junit-platform-launcher:1.7.1'
+//    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "5.${junit5MinorVersion}"
+//    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version: "1.${junit5MinorVersion}"
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
 //	api 'javax.inject:javax.inject:1'
@@ -62,8 +68,17 @@ dependencies {
     implementation 'javax.inject:javax.inject:1'
     
 // https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-runtime
-	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
-
+//	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+// https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api
+	//implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+	implementation 'jakarta.platform:jakarta.jakartaee-api:9.0.0'
+	/* Eclipse GlassFish 6.0. 
+	It is functionally complete and meets the compatibility requirements of the 
+	approved final version of the Jakarta EE 9 Specification. 
+	*/
+// https://mvnrepository.com/artifact/org.glassfish.main.core/kernel
+	implementation 'org.glassfish.main.core:kernel:6.0.0'
+	
 // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
 	implementation 'com.googlecode.json-simple:json-simple:1.1'
     
@@ -71,3 +86,43 @@ dependencies {
 // https://mvnrepository.com/artifact/commons-logging/commons-logging
     implementation 'commons-logging:commons-logging:1.2'
 }
+
+//test {
+//  // enable TestNG support (default is JUnit)
+////  useTestNG()
+//  // enable JUnit Platform (a.k.a. JUnit 5) support
+//  useJUnitPlatform()
+//  
+//    // set a system property for the test JVM(s)
+////  systemProperty 'some.prop', 'value'
+//
+//  // explicitly include or exclude tests
+////  include 'org/foo/**'
+//	include 'de/homebeaver/test/lei/TransformerTest'
+//	include 'de/homebeaver/test/lei/LeiRecordTest'
+////  exclude 'org/boo/**'
+//
+//  // show standard out and standard error of the test JVM(s) on the console
+//  testLogging.showStandardStreams = true
+//  
+//    // set heap size for the test JVM(s)
+////  minHeapSize = "128m"
+////  maxHeapSize = "512m"
+//
+//  // set JVM arguments for the test JVM(s)
+////  jvmArgs '-XX:MaxPermSize=256m'
+//
+//  // listen to events in the test execution lifecycle
+//  beforeTest { descriptor ->
+//     logger.lifecycle("Running test: " + descriptor)
+//  }
+//  
+//    // Fail the 'test' task on the first test failure
+//  failFast = true
+//
+//  // listen to standard out and standard error of the test JVM(s)
+//  onOutput { descriptor, event ->
+//     logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message )
+//  }
+//
+//}
