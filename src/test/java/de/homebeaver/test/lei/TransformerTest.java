@@ -10,11 +10,17 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.gleif.data.schema.leidata._2016.EntityType;
 import org.gleif.data.schema.leidata._2016.LEIData;
 import org.gleif.data.schema.leidata._2016.LEIRecordType;
+import org.gleif.data.schema.leidata._2016.OtherEntityNamesType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -59,8 +65,11 @@ public class TransformerTest {
 		File file = new File(TESTDIR+NOT_EXISTING_FILE);
 		assertFalse(file.canRead());
 
-		AbstactTransformer transformer = LeiTransformer.getInstance();
-		LOG.info("transformer:"+transformer);
+		Consumer<Void> wrap = Consumers.measuringConsumer( Void -> {
+			AbstactTransformer transformer = LeiTransformer.getInstance();
+			LOG.info("transformer:"+transformer);
+		});
+		wrap.accept( null );
 	}
 	
 	Object object;
@@ -74,9 +83,15 @@ public class TransformerTest {
 		LOG.info("transformer:"+transformer);
 		try {
 			InputStream is = new FileInputStream(file);
-			object = transformer.unmarshal(is);
-			LOG.info("object:"+object);
-			assertNotNull(object);
+			Consumer<Void> wrap = Consumers.measuringConsumer( Void -> {
+				object = transformer.unmarshal(is);
+				LOG.info("object:"+object);
+				assertNotNull(object);
+			});
+			wrap.accept( null );
+//			object = transformer.unmarshal(is);
+//			LOG.info("object:"+object);
+//			assertNotNull(object);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,9 +99,31 @@ public class TransformerTest {
 		}
 		LEIData lEIData = (LEIData)object;
 	    assertEquals(2, lEIData.getLEIHeader().getRecordCount().intValue());
+	    // "ContentDate", required = true, expected: 2021-07-23T16:00:00+00:00
+	    XMLGregorianCalendar xgc = lEIData.getLEIHeader().getContentDate();
+	    LOG.info("ContentDate:"+xgc); // 2021-07-23T16:00:00Z
+//	    LOG.info("ContentDate:"+xgc.getYear()+"-"+xgc.getMonth()+"-"+xgc.getDay()+"T"+xgc.getHour());
+	    assertEquals(2021, xgc.getYear());
+	    assertEquals(7, xgc.getMonth());
+	    assertEquals(23, xgc.getDay());
+	    assertEquals(16, xgc.getHour());
+	    
 	    List<LEIRecordType> list = lEIData.getLEIRecords().getLEIRecord();
 	    assertEquals(2, list.size());
-	    // TODO list abarbeiten
+//	    list.forEach(// Consumer<? super LEIRecordType> action)
+	    list.forEach(leiRecord -> { 
+	    	String lei = leiRecord.getLEI(); // "LEI", required = true
+	    	EntityType entity = leiRecord.getEntity(); // "Entity", required = true
+			Optional<OtherEntityNamesType> oen = Optional.ofNullable(entity.getOtherEntityNames());
+//		    LOG.info("LegalName:"+entity.getLegalName().getLang()+":"+entity.getLegalName().getValue());
+			LOG.info("LEIRecord.LEI=" + lei
+			+ "\n .Entity.LegalName:" + entity.getLegalName().getLang()+":"+entity.getLegalName().getValue() 
+			+ "\n .Entity.OtherEntityNames=" + (oen.isPresent() ? oen.get().getOtherEntityName().size() : "null")
+			+ "\n .Entity.EntityStatus=" + entity.getEntityStatus() 
+			+ "\n .Registration.InitialRegistrationDate="
+				+ leiRecord.getRegistration().getInitialRegistrationDate());
+			oen.ifPresent(Consumers.logOtherEntityNamesConsumer());
+	    });
 	}
 
 }
