@@ -4,8 +4,6 @@ import java.io.InputStream;
 
 import javax.inject.Named;
 
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-
 @Named
 /* Notice 
  * that there are two @Singleton annotations, 
@@ -64,11 +62,11 @@ public class LeiTransformer extends AbstactTransformer {
 		return (T) result;
 	}
 	
-	@Override
-	public NamespacePrefixMapper createNamespacePrefixMapper() {
-//		return CioNamespacePrefixMapper.getNamespacePrefixMapper();
-		return null;
-	}
+//	@Override
+//	public NamespacePrefixMapper createNamespacePrefixMapper() {
+////		return CioNamespacePrefixMapper.getNamespacePrefixMapper();
+//		return null;
+//	}
 
 
 }

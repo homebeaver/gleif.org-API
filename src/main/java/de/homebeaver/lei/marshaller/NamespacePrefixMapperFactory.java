@@ -12,7 +12,7 @@ import javax.xml.bind.PropertyException;
  * 
  * @see https://jesperdj.com/2018/09/30/jaxb-on-java-9-10-11-and-beyond/
  */
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+//import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 //import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
 
 public interface NamespacePrefixMapperFactory {
@@ -29,19 +29,19 @@ public interface NamespacePrefixMapperFactory {
 	 * 
 	 * @return own NamespacePrefixMapper
 	 */
-	default NamespacePrefixMapper createNamespacePrefixMapper() {
-		return null;
-	}
-	
+//	default NamespacePrefixMapper createNamespacePrefixMapper() {
+//		return null;
+//	}
+//	
 	default void registerNamespacePrefixMapper(Marshaller marshaller) {
-		NamespacePrefixMapper namespacePrefixMapper = createNamespacePrefixMapper();
-		if(namespacePrefixMapper==null) return;
-        try {
-        	marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", namespacePrefixMapper);
-        } catch(PropertyException ex) {
-            // In case another JAXB implementation is used
-			throw new TransformationException(TransformationException.NAMESPACE_PREFIX_MAPPER_ERROR, ex);
-        }
+//		NamespacePrefixMapper namespacePrefixMapper = createNamespacePrefixMapper();
+//		if(namespacePrefixMapper==null) return;
+//        try {
+//        	marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", namespacePrefixMapper);
+//        } catch(PropertyException ex) {
+//            // In case another JAXB implementation is used
+//			throw new TransformationException(TransformationException.NAMESPACE_PREFIX_MAPPER_ERROR, ex);
+//        }
 	}
 
 }

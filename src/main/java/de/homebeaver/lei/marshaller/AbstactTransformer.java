@@ -1,27 +1,17 @@
 package de.homebeaver.lei.marshaller;
 
-import static javax.xml.bind.JAXBContext.newInstance;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.logging.Logger;
 
 import javax.inject.Named;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
-import org.xml.sax.SAXException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContextFactory;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * The transformer has two main features: 
@@ -55,14 +45,37 @@ public abstract class AbstactTransformer implements NamespacePrefixMapperFactory
 	}
 	
 	// ctor
+/*
+ Unmarshalling from a File:
+
+           JAXBContext jc = JAXBContext.newInstance( "com.acme.foo" );
+           Unmarshaller u = jc.createUnmarshaller();
+           Object o = u.unmarshal( new File( "nosferatu.xml" ) );
+        
+
+Unmarshalling from an InputStream:
+
+           InputStream is = new FileInputStream( "nosferatu.xml" );
+           JAXBContext jc = JAXBContext.newInstance( "com.acme.foo" );
+           Unmarshaller u = jc.createUnmarshaller();
+           Object o = u.unmarshal( is );
+        
+
+
+ */
 	protected AbstactTransformer(String contentPath, AbstactTransformer instance) {
-		LOG.fine("contentPath:"+contentPath);
+		LOG.info("contentPath:"+contentPath);
 		if(instance==null) try {
-			System.setProperty(JAXBContext.JAXB_CONTEXT_FACTORY, "com.sun.xml.bind.v2.ContextFactory");
-			this.jaxbContext = newInstance(contentPath);
+////			System.setProperty(JAXBContext.JAXB_CONTEXT_FACTORY, "jakarta.xml.bind.JAXBContextFactory");
+////			"jakarta.xml.bind.context.factory"
+////			java.util.ServiceLoader.load(JAXBContextFactory.class);
+//			Class<?> type = loadClass();
+//			this.jaxbContext = JAXBContext.newInstance(type);
+			this.jaxbContext = JAXBContext.newInstance(contentPath);
 			LOG.finer("jaxbContext:\n"+jaxbContext.toString()); // displays path and Classes known to context
 			instance = this;
 		} catch (JAXBException ex) {
+			LOG.warning(ex.getMessage());
 			throw new TransformationException(TransformationException.JAXB_INSTANTIATE_ERROR, ex);
 		} else {
 			this.jaxbContext = instance.jaxbContext;
@@ -71,52 +84,34 @@ public abstract class AbstactTransformer implements NamespacePrefixMapperFactory
 
 	public boolean isValid(File xmlfile) {
 		String resource = getResource();
-		try {
-			Source xmlFile = new StreamSource(xmlfile);
-			Validator validator = this.getSchemaValidator(); // throws SAXException, Exception
-			validator.validate(xmlFile);
-			LOG.config("validate against "+resource+" passed.");
-		} catch (SAXException ex) {
-			LOG.warning("validate against "+resource+" failed, SAXException: "+ex.getMessage());
-			return false;
-		} catch (Exception ex) {
-			LOG.severe("validate "+ex.getMessage());
-		}
+//		try {
+//			Source xmlFile = new StreamSource(xmlfile);
+//			Validator validator = this.getSchemaValidator(); // throws SAXException, Exception
+//			validator.validate(xmlFile);
+//			LOG.config("validate against "+resource+" passed.");
+//		} catch (SAXException ex) {
+//			LOG.warning("validate against "+resource+" failed, SAXException: "+ex.getMessage());
+//			return false;
+//		} catch (Exception ex) {
+//			LOG.severe("validate "+ex.getMessage());
+//		}
 		return true;
 	}
 	
-	public Validator getSchemaValidator() throws SAXException {
-		return getSchemaValidator(getResource());
-	}
+//	public Validator getSchemaValidator() throws SAXException {
+//		return getSchemaValidator(getResource());
+//	}
 	
 	public abstract <T> T unmarshal(InputStream xmlInputStream);
 	
 	protected <T extends Object> T unmarshal(InputStream xmlInputStream, Class<T> declaredType) {
 		try {
-//			long start = System.nanoTime();
-			StreamSource ss = new StreamSource(xmlInputStream); // ca 10 micro sec
-//			long ss_duration = System.nanoTime() - start;
-			long start = System.nanoTime();
-			Unmarshaller unmarshaller = createUnmarshaller(); // ca 20 milli sec
-			long duration = System.nanoTime() - start; // (ns): 8017100
-			                                           // (ns):23151900
-			                                           // (ns):10186300
-			JAXBElement<T> jbe = unmarshaller.unmarshal(ss, declaredType); // ca 25 milli sec
-			long um_duration = System.nanoTime() - start;
-			// (ns):18100 ; 15479800 ; 44089300
-			// (ns): 9800 ; 16766200 ; 41792000
-			// (ns):23393800 ; 60889900
-			// (ns):23467300 ; 59885800
-			// (ns):15561500 ; 39972300
-			// (ns):14445800 ; 38007200
-			// (ns):15308600 ; 39491300
-			// (ns):20259200 ; 52133600
-			// (ns):29211800 ; 87316400 : lei_data.xml mit zwei LEIs
-			// (ns):24670100 ; 77904000
-			LOG.info("try unmarshal to "+declaredType.getName() 
-			+ " Ausführungszeit (ns):" + duration + " ; " + um_duration);
-//			return unmarshaller.unmarshal(new StreamSource(xmlInputStream), declaredType).getValue();
-			return jbe.getValue();
+			Unmarshaller unmarshaller = createUnmarshaller();
+			LOG.info("try unmarshal to "+declaredType.getName());
+			// StreamSource implements Source
+			javax.xml.transform.Source source = new javax.xml.transform.stream.StreamSource(xmlInputStream);
+//			javax.xml.transform.Source source
+			return unmarshaller.unmarshal(source, declaredType).getValue();
 		} catch (JAXBException ex) {
 			throw new TransformationException(TransformationException.MARSHALLING_ERROR, ex);
 		}
@@ -144,14 +139,14 @@ public abstract class AbstactTransformer implements NamespacePrefixMapperFactory
 
 	protected abstract String getResource();
 	
-	Validator getSchemaValidator(String resource) throws SAXException {
-		LOG.fine("resource:"+resource + " Class:"+this.getClass());
-		URL schemaURL = this.getClass().getResource(resource);
-		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		LOG.finer("schemaURL:"+schemaURL);
-		Schema schema = sf.newSchema(schemaURL);
-		return schema.newValidator();
-	}
+//	Validator getSchemaValidator(String resource) throws SAXException {
+//		LOG.fine("resource:"+resource + " Class:"+this.getClass());
+//		URL schemaURL = this.getClass().getResource(resource);
+//		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+//		LOG.finer("schemaURL:"+schemaURL);
+//		Schema schema = sf.newSchema(schemaURL);
+//		return schema.newValidator();
+//	}
 
 	private Unmarshaller createUnmarshaller() throws JAXBException {
 		return jaxbContext.createUnmarshaller();
@@ -174,7 +169,7 @@ public abstract class AbstactTransformer implements NamespacePrefixMapperFactory
 		Marshaller marshaller = jaxbContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formatXmlOutput());
 		
-		registerNamespacePrefixMapper(marshaller);
+//		registerNamespacePrefixMapper(marshaller);
 
 		return marshaller;
 	}
