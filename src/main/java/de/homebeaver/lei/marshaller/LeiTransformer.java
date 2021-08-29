@@ -4,6 +4,8 @@ import java.io.InputStream;
 
 import javax.inject.Named;
 
+import jakarta.xml.bind.Unmarshaller.Listener;
+
 @Named
 /* Notice 
  * that there are two @Singleton annotations, 
@@ -62,6 +64,10 @@ public class LeiTransformer extends AbstactTransformer {
 		return (T) result;
 	}
 	
+	protected Listener createListener() {
+		return new UnmarshallerListener();
+	}
+
 //	@Override
 //	public NamespacePrefixMapper createNamespacePrefixMapper() {
 ////		return CioNamespacePrefixMapper.getNamespacePrefixMapper();

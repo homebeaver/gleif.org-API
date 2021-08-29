@@ -1,17 +1,20 @@
 package de.homebeaver.lei.marshaller;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
 import javax.inject.Named;
 
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBContextFactory;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.Unmarshaller.Listener;
 
 /**
  * The transformer has two main features: 
@@ -66,11 +69,16 @@ Unmarshalling from an InputStream:
 	protected AbstactTransformer(String contentPath, AbstactTransformer instance) {
 		LOG.info("contentPath:"+contentPath);
 		if(instance==null) try {
-////			System.setProperty(JAXBContext.JAXB_CONTEXT_FACTORY, "jakarta.xml.bind.JAXBContextFactory");
-////			"jakarta.xml.bind.context.factory"
-////			java.util.ServiceLoader.load(JAXBContextFactory.class);
-//			Class<?> type = loadClass();
-//			this.jaxbContext = JAXBContext.newInstance(type);
+/*
+	der xml parser wird aus java.8 genommen, 
+	es gibt aber in xerces-2.12.1.jar
+	org.apache.xerces.jaxp.SAXParserFactoryImpl spfi;
+	
+	Den nehme ich. Es ist nicht notwendig, es zu erzwingen per
+		System.setProperty( "javax.xml.parsers.SAXParserFactory",
+                "org.apache.xerces.jaxp.SAXParserFactoryImpl" );
+
+ */
 			this.jaxbContext = JAXBContext.newInstance(contentPath);
 			LOG.finer("jaxbContext:\n"+jaxbContext.toString()); // displays path and Classes known to context
 			instance = this;
@@ -82,8 +90,9 @@ Unmarshalling from an InputStream:
 		}
 	}
 
+	// in jakarta 3.0.x / jaxb 3.0.2 glassfish wird nicht validiert!
 	public boolean isValid(File xmlfile) {
-		String resource = getResource();
+//		String resource = getResource();
 //		try {
 //			Source xmlFile = new StreamSource(xmlfile);
 //			Validator validator = this.getSchemaValidator(); // throws SAXException, Exception
@@ -102,15 +111,31 @@ Unmarshalling from an InputStream:
 //		return getSchemaValidator(getResource());
 //	}
 	
+	public <T> T unmarshal(File file) throws FileNotFoundException {
+		//return unmarshal(InputStream is);
+		return unmarshal(new BufferedInputStream(new FileInputStream(file)));		
+	}
+	
 	public abstract <T> T unmarshal(InputStream xmlInputStream);
 	
 	protected <T extends Object> T unmarshal(InputStream xmlInputStream, Class<T> declaredType) {
 		try {
 			Unmarshaller unmarshaller = createUnmarshaller();
+/*
+ *       UnmarshallerHandler unmarshallerHandler = unmarshaller.getUnmarshallerHandler();
+ *
+ *       SAXParserFactory spf = SAXParserFactory.newInstance();
+ *       spf.setNamespaceAware( true );
+ * 
+ *       XMLReader xmlReader = spf.newSAXParser().getXMLReader();
+ *       xmlReader.setContentHandler( unmarshallerHandler );
+ *       xmlReader.parse(new InputSource( new FileInputStream( XML_FILE ) ) );
+ *
+ *       MyObject myObject= (MyObject)unmarshallerHandler.getResult();                          
+ */
 			LOG.info("try unmarshal to "+declaredType.getName());
-			// StreamSource implements Source
+			// StreamSource implements Source:
 			javax.xml.transform.Source source = new javax.xml.transform.stream.StreamSource(xmlInputStream);
-//			javax.xml.transform.Source source
 			return unmarshaller.unmarshal(source, declaredType).getValue();
 		} catch (JAXBException ex) {
 			throw new TransformationException(TransformationException.MARSHALLING_ERROR, ex);
@@ -148,8 +173,24 @@ Unmarshalling from an InputStream:
 //		return schema.newValidator();
 //	}
 
+	// listen for unmarshal events, EventCallbacks
+	protected Listener createListener() {
+		return null;
+	}
+	
+	/* 
+	 * bei grossen gleif concatenated files (>1Mio recs) 
+	 * kommt es zu OutOfMemoryError.
+	 * Mit Listener dieses Problem umgehen: nur wenige recs in heap List<LEIRecordType> halten
+	 */
+	protected Unmarshaller createUnmarshaller(Listener listener) throws JAXBException {
+		Unmarshaller u = jaxbContext.createUnmarshaller();
+		u.setListener(listener);
+		return u;
+	}
+
 	private Unmarshaller createUnmarshaller() throws JAXBException {
-		return jaxbContext.createUnmarshaller();
+		return createUnmarshaller(createListener());
 	}
 
 	/*

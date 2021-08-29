@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13'
+//    testImplementation 'junit:junit:4.13'
 // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
@@ -67,17 +67,22 @@ dependencies {
 // andere schreibweise:
     implementation 'javax.inject:javax.inject:1'
     
+    // https://mvnrepository.com/artifact/xerces/xercesImpl
+    implementation 'xerces:xercesImpl:2.12.1'
+	implementation 'xalan:xalan:2.7.2'
+	  
 // https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-runtime
 //	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
 // https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api
-	//implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
-	implementation 'jakarta.platform:jakarta.jakartaee-api:9.0.0'
-	/* Eclipse GlassFish 6.0. 
-	It is functionally complete and meets the compatibility requirements of the 
-	approved final version of the Jakarta EE 9 Specification. 
-	*/
-// https://mvnrepository.com/artifact/org.glassfish.main.core/kernel
-	implementation 'org.glassfish.main.core:kernel:6.0.0'
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+// https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-ri
+	implementation 'com.sun.xml.bind:jaxb-ri:3.0.2'
+//	implementation 'jakarta.platform:jakarta.jakartaee-api:9.0.0'
+//	/* Eclipse GlassFish 6.0.x ist überdimensioniert
+//	It is functionally complete and meets the compatibility requirements of the 
+//	approved final version of the Jakarta EE 9 Specification. 
+//	*/
+//	implementation 'org.glassfish.main.core:kernel:6.0.0'
 	
 // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
 	implementation 'com.googlecode.json-simple:json-simple:1.1'
