@@ -20,7 +20,6 @@ import org.gleif.data.schema.rr._2016.RelationshipStatusEnum;
 import org.gleif.data.schema.rr._2016.RelationshipTypeEnum;
 
 import de.homebeaver.lei.AbstractCounter;
-import de.homebeaver.lei.ManagingLOUCounter;
 import de.homebeaver.lei.RegistrationStatusCounter;
 import de.homebeaver.lei.RelationshipStatusCounter;
 import de.homebeaver.lei.RelationshipTypeCounter;
@@ -47,7 +46,7 @@ public class RRUnmarshallerListener extends Listener {
 		relationshipTypeCounter = new RelationshipTypeCounter();
 		relationshipStatusCounter = new RelationshipStatusCounter();
 		registrationStatusCounter = new RegistrationStatusCounter();
-		managingLOUCounter = new ManagingLOUCounter();
+		managingLOUCounter = new AbstractCounter<String>();
 		this.unmarshaller = unmarshaller;
 		getSAXConnector();
 	}

@@ -21,6 +21,7 @@ import org.gleif.data.schema.leidata._2016.TransliteratedOtherAddressType;
 import org.gleif.data.schema.leidata._2016.TransliteratedOtherEntityNameType;
 
 import de.homebeaver.lei.AbstractCounter;
+import de.homebeaver.lei.DistinctCountryCounter;
 import de.homebeaver.lei.DistinctStringCounter;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Unmarshaller;
@@ -42,7 +43,7 @@ public class UnmarshallerListener extends Listener {
 		count = 0;
 		this.unmarshaller = unmarshaller;
 		langCounter = new DistinctStringCounter();
-		legalJurisdictionCounter = new AbstractCounter<String>();
+		legalJurisdictionCounter = new DistinctCountryCounter();
 		getSAXConnector();
 	}
 	
@@ -127,7 +128,7 @@ public class UnmarshallerListener extends Listener {
 			EntityType target = (EntityType)o;
 			
 			String lj = target.getLegalJurisdiction(); // optional
-			legalJurisdictionCounter.count(lj==null ? "" : lj); // TODO DistinctStringCounter
+			legalJurisdictionCounter.count(lj);
 			
 			langCounter.count(target.getLegalName().getLang());
 			if(target.getOtherEntityNames()!=null) { // opt
