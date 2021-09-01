@@ -22,6 +22,7 @@ import org.gleif.data.schema.leidata._2016.TransliteratedOtherEntityNameType;
 
 import de.homebeaver.lei.AbstractCounter;
 import de.homebeaver.lei.DistinctCountryCounter;
+import de.homebeaver.lei.DistinctLangCounter;
 import de.homebeaver.lei.DistinctStringCounter;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Unmarshaller;
@@ -42,7 +43,7 @@ public class UnmarshallerListener extends Listener {
 	UnmarshallerListener(Unmarshaller unmarshaller) {
 		count = 0;
 		this.unmarshaller = unmarshaller;
-		langCounter = new DistinctStringCounter();
+		langCounter = new DistinctLangCounter();
 		legalJurisdictionCounter = new DistinctCountryCounter();
 		getSAXConnector();
 	}
