@@ -5,6 +5,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.gleif.data.schema.leidata._2016.OtherEntityNamesType;
+import org.gleif.data.schema.leidata._2016.TransliteratedOtherAddressesType;
+import org.gleif.data.schema.leidata._2016.TransliteratedOtherEntityNamesType;
 
 /*
  * Quelle: https://openbook.rheinwerk-verlag.de/javainsel/11_007.html#u11.7.1
@@ -26,12 +28,26 @@ wrap.accept( null );
 		};
 	}
 
-//	public static Consumer<? super OtherEntityNamesType> logConsumer(Optional<OtherEntityNamesType> oen) {
 	public static Consumer<? super OtherEntityNamesType> logOtherEntityNamesConsumer() {
-//		if(!oen.isPresent()) return null;
 		return t -> {
 			t.getOtherEntityName().forEach(oename -> {
 				Logger.getAnonymousLogger().info(oename.getType()+" "+oename.getLang()+":"+oename.getValue());
+			});
+		};
+	}
+
+	public static Consumer<? super TransliteratedOtherEntityNamesType> logTransliteratedOtherEntityNamesConsumer() {
+		return t -> {
+			t.getTransliteratedOtherEntityName().forEach(oename -> {
+				Logger.getAnonymousLogger().info(oename.getType()+" "+oename.getLang()+":"+oename.getValue());
+			});
+		};
+	}
+
+	public static Consumer<? super TransliteratedOtherAddressesType> logTransliteratedOtherAddressesConsumer() {
+		return t -> {
+			t.getTransliteratedOtherAddress().forEach(adr -> {
+				Logger.getAnonymousLogger().info(adr.getType()+" "+adr.getLang()+":"+adr.getCountry());
 			});
 		};
 	}
