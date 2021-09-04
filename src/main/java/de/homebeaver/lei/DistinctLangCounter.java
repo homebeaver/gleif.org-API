@@ -1,8 +1,5 @@
 package de.homebeaver.lei;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * count distinct languages
  * 
@@ -191,25 +188,12 @@ import java.util.regex.Pattern;
  */
 public class DistinctLangCounter extends DistinctStringCounter {
 	
-	private static final String regex = "^([a-z]{2})(-.*)?$";
-
-	Pattern p;
 	public DistinctLangCounter() {
 		super();
-		p = Pattern.compile(regex);
 	}
 	
 	public void count(String s) {
-		super.count(mapTo(s));
+		super.count(XmlLang.mapTo(s));
 	}
 	
-	private String mapTo(String s) {
-		if(s==null) return s;
-		
-		Matcher m = p.matcher(s.equals("GB") ? "en" : s.toLowerCase());
-		if(m.matches()) {
-			return m.group(1);
-		}
-		return "invalid";
-	}
 }
