@@ -61,11 +61,19 @@ public class GleifApiTest {
     	initLogger();
 	}
 	
+	// Als Local Operating Unit (LOU) wird eine LEI-Vergabestelle bezeichnet. 
+	private static final String LOUs = "097900BEFH0000000217,EVK05KS7XY1DEII3R011";
 //	private static final String LEI_VALID = "529900W18LQJJN6SJ336";
 //	private static final String LEI_VALID = "353800023456EJMNXY28"; // jp
 	private static final String LEI_VALID = "097900BEF50000000472"; // sk+transliteratedOtherNames
+	private static final String LEI_ALETITMMXXX = "549300NQ32SRT0NWPB72"; // with BIC
+	/*
+	 * Concatenated Files contains entries since 8th June 2015,
+	 * sources published before this date are historical ( https://www.gleif.org/en/lei-data/gleif-concatenated-file/lei-issuers-historical-files )
+	 */
 	private static final String LEI_OLD = "M07J9MTYHFCSVRBV2631"; // returns 0 recs
-	
+	private static final String LEI_UBS = "BFM8T61CT2L1QCEMIK50"; // returns 1 recs
+
 	private static final String GLEIF_EXPORT_V1 = "https://api.gleif.org/export/v1";
 	private String getLeiData(String id) {
 		if (!LeiRecord.isValid(id))
@@ -110,9 +118,9 @@ public class GleifApiTest {
 	private InputStream getLeiXmlStream(String id) {
 		if (!LeiRecord.isValid(id))
 			return null;
-		// for valid lei get the LeiRecord:
+		// for some LOUs and valid lei get the LeiRecord:
 		try {
-	        String urlParameters = "?filter[lei]="+id;
+	        String urlParameters = "?filter[lei]="+LOUs+","+id;
 			URL url = new URL(GLEIF_EXPORT_V1+"/lei-records.xml"+urlParameters);
 			HttpsURLConnection con = (HttpsURLConnection)url.openConnection(); // throws IOException
 	        //add request header
@@ -153,12 +161,11 @@ public class GleifApiTest {
 	}
 	
 	/*
-	 * Query
+	 * Query 1 LEI + 2 LOUs
 	 */
 	@Test
 	public void queryValidLei() {
 		LOG.info(GLEIF_EXPORT_V1+ " Query LEI:"+LEI_VALID);
-		//String xml = getLeiData(LEI_VALID);
 		AbstactTransformer transformer = LeiTransformer.getInstance();
 		LOG.info("transformer:"+transformer);
 		object = transformer.unmarshal(getLeiXmlStream(LEI_VALID));
@@ -166,11 +173,11 @@ public class GleifApiTest {
 	    XMLGregorianCalendar xgc = lEIData.getLEIHeader().getContentDate();
 	    FileContentEnum queryRestponse = lEIData.getLEIHeader().getFileContent();
 	    LOG.info("ContentDate:"+xgc + " " + queryRestponse);
-	    assertEquals(1, lEIData.getLEIHeader().getRecordCount().intValue());
+	    assertEquals(3, lEIData.getLEIHeader().getRecordCount().intValue());
 	    assertEquals(FileContentEnum.QUERY_RESPONSE, queryRestponse);
 	    
 	    List<LEIRecordType> list = lEIData.getLEIRecords().getLEIRecord();
-	    assertEquals(1, list.size());
+	    assertEquals(3, list.size());
 	    list.forEach(leiRecord -> { 
 	    	String lei = leiRecord.getLEI(); // "LEI", required = true
 	    	EntityType entity = leiRecord.getEntity(); // "Entity", required = true
@@ -182,8 +189,11 @@ public class GleifApiTest {
 			+ "\n .Entity.OtherEntityNames=" + (oen.isPresent() ? oen.get().getOtherEntityName().size() : "null")
 			+ "\n .Entity.TransliteratedOtherAddress=" + (toa.isPresent() ? toa.get().getTransliteratedOtherAddress().size() : "null")
 			+ "\n .Entity.EntityStatus=" + entity.getEntityStatus() 
-			+ "\n .Registration.InitialRegistrationDate="
-				+ leiRecord.getRegistration().getInitialRegistrationDate());
+			+ "\n .Registration.Status InitialRegistrationDate lastUpdateDate LOU="
+				+ leiRecord.getRegistration().getRegistrationStatus()
+				+" "+leiRecord.getRegistration().getInitialRegistrationDate()
+				+" "+leiRecord.getRegistration().getLastUpdateDate()
+				+" "+leiRecord.getRegistration().getManagingLOU());
 			oen.ifPresent(Consumers.logOtherEntityNamesConsumer());
 			toen.ifPresent(Consumers.logTransliteratedOtherEntityNamesConsumer());
 			toa.ifPresent(Consumers.logTransliteratedOtherAddressesConsumer());
